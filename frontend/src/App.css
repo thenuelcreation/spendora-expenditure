@@ -71,6 +71,10 @@ body {
   display: grid;
   align-content: center;
   justify-items: center;
+  min-height: 100vh;
+  min-height: 100dvh;
+  padding: max(24px, env(safe-area-inset-top)) 20px max(24px, env(safe-area-inset-bottom));
+  overflow: hidden;
   background:
     radial-gradient(circle at 50% 40%, rgba(139, 92, 246, 0.17), transparent 34%),
     #f8f7fc;
@@ -2730,7 +2734,10 @@ textarea:focus {
 
 .category-modal {
   width: min(560px, calc(100vw - 32px));
-  overflow: hidden;
+  max-height: calc(100vh - 32px);
+  max-height: calc(100dvh - 32px);
+  overflow-x: hidden;
+  overflow-y: auto;
   border: 1px solid var(--border);
   border-radius: 22px;
   background: white;
@@ -5407,17 +5414,217 @@ textarea:focus-visible {
   }
 
   .category-table-container {
-    overflow-x: auto;
+    overflow: visible;
+    border-radius: 12px;
   }
 
   .category-table {
-    min-width: 620px;
+    min-width: 0;
+    display: block;
   }
 
-  .category-table th,
+  .category-table thead {
+    display: none;
+  }
+
+  .category-table tbody {
+    display: grid;
+    gap: 10px;
+    padding: 10px;
+  }
+
+  .category-table tr {
+    display: grid;
+    gap: 0;
+    padding: 6px 12px;
+    border: 1px solid #eeecf2;
+    border-radius: 11px;
+    background: var(--surface);
+  }
+
   .category-table td {
-    padding-right: 12px;
-    padding-left: 12px;
+    min-width: 0;
+    height: auto;
+    min-height: 38px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    padding: 8px 0;
+    border-bottom: 1px solid #f0eef3;
+    text-align: right;
+    overflow-wrap: anywhere;
+  }
+
+  .category-table tr td:last-child {
+    border-bottom: 0;
+  }
+
+  .category-table td::before {
+    content: attr(data-label);
+    flex: 0 0 auto;
+    color: #898492;
+    font-size: 9px;
+    font-weight: 700;
+    text-align: left;
+    text-transform: uppercase;
+  }
+
+  .category-table-name {
+    justify-content: flex-end;
+    gap: 7px;
+  }
+
+  .category-table-name strong {
+    max-width: min(58vw, 280px);
+    overflow-wrap: anywhere;
+    text-align: right;
+  }
+
+  .category-table-actions-cell .management-actions {
+    flex: 1;
+    justify-content: flex-end;
+  }
+
+  .category-table-actions-cell .category-table-edit {
+    margin-left: auto;
+  }
+
+  :root[data-theme="dark"] .category-table tr {
+    border-color: var(--border);
+    background: var(--surface);
+  }
+
+  :root[data-theme="dark"] .category-table td {
+    border-color: var(--border-light);
+  }
+
+  .category-menu {
+    right: 0;
+    z-index: 30;
+  }
+
+  .category-modal {
+    width: min(100%, 560px);
+    max-height: calc(100vh - 24px);
+    max-height: calc(100dvh - 24px);
+    border-radius: 16px;
+  }
+
+  .modal-header {
+    padding: 16px;
+  }
+
+  .modal-header h2 {
+    font-size: 15px;
+  }
+
+  .modal-header p {
+    max-width: 235px;
+    line-height: 1.45;
+  }
+
+  .category-modal-form {
+    gap: 14px;
+    padding: 16px;
+  }
+
+  .modal-actions {
+    position: sticky;
+    bottom: -16px;
+    padding: 12px 0 2px;
+    background: var(--surface);
+  }
+
+  .modal-actions button {
+    min-height: 40px;
+    padding: 0 12px;
+    font-size: 11px;
+  }
+
+  .splash-brand {
+    gap: 10px;
+  }
+
+  .splash-logo-mark {
+    width: 72px;
+    height: 72px;
+    border-radius: 22px;
+  }
+
+  .splash-logo-mark::before,
+  .splash-logo-mark::after {
+    border-radius: 27px;
+  }
+
+  .splash-logo-mark > span {
+    font-size: 42px;
+  }
+
+  .splash-wordmark {
+    font-size: clamp(24px, 7vw, 28px);
+  }
+
+  .splash-tagline {
+    font-size: 10px;
+    letter-spacing: 0.1em;
+  }
+
+  .splash-progress {
+    width: min(112px, 42vw);
+    margin-top: 28px;
+  }
+}
+
+@media (max-width: 380px) {
+  .categories-screen .spendora-page-header {
+    align-items: flex-start;
+  }
+
+  .categories-screen .spendora-page-heading p {
+    max-width: 185px;
+    line-height: 1.4;
+  }
+
+  .categories-screen .spendora-page-header-action {
+    gap: 5px;
+    min-height: 36px;
+    padding: 0 8px;
+    font-size: 10px;
+  }
+
+  .categories-screen .spendora-page-header-action svg {
+    width: 14px;
+    height: 14px;
+  }
+
+  .category-table tbody {
+    padding: 7px;
+  }
+
+  .category-table tr {
+    padding-right: 9px;
+    padding-left: 9px;
+  }
+
+  .category-table-icon {
+    width: 29px;
+    height: 29px;
+  }
+
+  .category-table-name strong {
+    max-width: 48vw;
+    font-size: 11px;
+  }
+
+  .splash-logo-mark {
+    width: 64px;
+    height: 64px;
+    border-radius: 19px;
+  }
+
+  .splash-logo-mark > span {
+    font-size: 37px;
   }
 }
 

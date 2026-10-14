@@ -159,20 +159,20 @@ function Categories() {
               <tbody>
                 {view === "categories" ? categories.map((category) => (
                   <tr key={category.id}>
-                    <td>
+                    <td data-label="Category">
                       <div className="category-table-name">
                         <span className="category-table-icon"><Folder size={17} /></span>
                         <strong>{category.name}</strong>
                       </div>
                     </td>
-                    <td>{category.description || <span className="category-table-muted">No description</span>}</td>
-                    <td>
+                    <td data-label="Description">{category.description || <span className="category-table-muted">No description</span>}</td>
+                    <td data-label="Sub-categories">
                       <span className="subcategory-count">
                         {category.subcategories.length}{" "}
                         {category.subcategories.length === 1 ? "sub-category" : "sub-categories"}
                       </span>
                     </td>
-                    <td className="category-table-actions-cell">
+                    <td className="category-table-actions-cell" data-label="Actions">
                       <div className="management-actions">
                         <button
                           type="button"
@@ -201,14 +201,14 @@ function Categories() {
                   </tr>
                 )) : categories.flatMap((category) => category.subcategories.map((subcategory) => (
                   <tr key={subcategory.id}>
-                    <td>
+                    <td data-label="Sub-category">
                       <div className="category-table-name">
                         <span className="category-table-icon subcategory-table-icon"><Tag size={16} /></span>
                         <strong>{subcategory.name}</strong>
                       </div>
                     </td>
-                    <td>{category.name}</td>
-                    <td className="category-table-actions-cell">
+                    <td data-label="Parent category">{category.name}</td>
+                    <td className="category-table-actions-cell" data-label="Actions">
                       <button type="button" className="category-table-edit" onClick={() => openEditModal(category)}>
                         <Pencil size={14} />
                         Edit parent

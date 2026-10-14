@@ -167,25 +167,38 @@ function Expenditures() {
             <Link to="/export" className="export-button"><Download size={16} /><span>Export</span></Link>
           </div>
 
-          <div className="records-table">
-            <div className="records-head">
-              <span>Date</span><span>Category</span><span>Sub-category</span><span>Amount</span><span>Payment</span><span>Action</span>
-            </div>
-            {loading ? <p className="records-empty">Loading expenditures...</p> : result.items.length === 0 ? (
-              <p className="records-empty">No expenditures match these filters.</p>
-            ) : result.items.map((expense) => (
-              <div className="records-row" key={expense.id}>
-                <span data-label="Date">{new Date(`${expense.date}T00:00:00`).toLocaleDateString()}</span>
-                <span className="category-cell" data-label="Category">{expense.category.name}</span>
-                <span data-label="Sub-category">{expense.subcategory.name}</span>
-                <strong data-label="Amount">{money(expense.amount, expense.currency)}</strong>
-                <span data-label="Payment">{expense.paymentMethod}</span>
-                <div className="record-actions" data-label="Action">
-                  <Link to={`/expenditures/edit/${expense.id}`} title="Edit expenditure" aria-label="Edit expenditure"><Edit3 size={15} /></Link>
-                  <button type="button" title="Delete expenditure" aria-label="Delete expenditure" onClick={() => deleteExpense(expense)}><Trash2 size={15} /></button>
-                </div>
-              </div>
-            ))}
+          <div className="records-table expenditures-table-scroll">
+            <table className="expenditures-records-table">
+              <thead>
+                <tr>
+                  <th scope="col">Date</th>
+                  <th scope="col">Category</th>
+                  <th scope="col">Sub-category</th>
+                  <th scope="col">Amount</th>
+                  <th scope="col">Payment</th>
+                  <th scope="col"><span className="visually-hidden">Actions</span></th>
+                </tr>
+              </thead>
+              <tbody>
+                {loading ? (
+                  <tr><td className="records-empty" colSpan="6">Loading expenditures...</td></tr>
+                ) : result.items.length === 0 ? (
+                  <tr><td className="records-empty" colSpan="6">No expenditures match these filters.</td></tr>
+                ) : result.items.map((expense) => (
+                  <tr key={expense.id}>
+                    <td data-label="Date">{new Date(`${expense.date}T00:00:00`).toLocaleDateString()}</td>
+                    <td className="category-cell" data-label="Category">{expense.category.name}</td>
+                    <td data-label="Sub-category">{expense.subcategory.name}</td>
+                    <td className="amount-cell" data-label="Amount">{money(expense.amount, expense.currency)}</td>
+                    <td data-label="Payment">{expense.paymentMethod}</td>
+                    <td className="expenditure-table-actions" data-label="Actions">
+                      <Link to={`/expenditures/edit/${expense.id}`} title="Edit expenditure" aria-label="Edit expenditure"><Edit3 size={15} /></Link>
+                      <button type="button" title="Delete expenditure" aria-label="Delete expenditure" onClick={() => deleteExpense(expense)}><Trash2 size={15} /></button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
 
           <div className="pagination">
