@@ -42,47 +42,16 @@ function Categories() {
   }, []);
 
   const saveCategory = async ({ id, ...data }) => {
-    if (!id) {
-      const result = await apiPost("/categories", {
-        ...data,
-        subcategories: data.subcategories.map((item) => item.name),
-      });
-      setCategories((current) => [...current, result.category].sort((a, b) => a.name.localeCompare(b.name)));
-    } else {
-      const { categories: latest } = await apiGet("/categories");
-      const currentCategory = latest.find((category) => category.id === id);
-      if (!currentCategory) {
-        throw new Error("This category no longer exists. Refresh the page and try again.");
-      }
-
-      await apiPatch(`/categories/${id}`, {
-        name: data.name,
-        description: data.description,
-      });
-      const deletedIds = new Set();
-      for (const existing of currentCategory.subcategories) {
-        if (!data.subcategories.some((item) => item.id === existing.id)) {
-          await apiDelete(`/subcategories/${existing.id}`);
-          deletedIds.add(existing.id);
-        }
-      }
-      for (const desired of data.subcategories) {
-        const existing = desired.id
-          ? currentCategory.subcategories.find((item) => item.id === desired.id)
-          : currentCategory.subcategories.find((item) =>
-            !deletedIds.has(item.id) && item.name === desired.name
-          );
-        if (existing) {
-          if (existing.name !== desired.name) {
-            await apiPatch(`/subcategories/${existing.id}`, { name: desired.name });
-          }
-        } else {
-          await apiPost(`/categories/${id}/subcategories`, { name: desired.name });
-        }
-      }
-      const { categories: updated } = await apiGet("/categories");
-      setCategories(updated);
-    }
+    const payload = {
+      ...data,
+      subcategories: data.subcategories.map((item) => item.name),
+    };
+    const result = id
+      ? await apiPatch(`/categories/${id}`, payload)
+      : await apiPost("/categories", payload);
+    setCategories((current) => id
+      ? current.map((category) => category.id === id ? result.category : category)
+      : [...current, result.category].sort((a, b) => a.name.localeCompare(b.name)));
     setModalOpen(false);
     setEditingCategory(null);
   };

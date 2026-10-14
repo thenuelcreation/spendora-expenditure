@@ -1,5 +1,3 @@
-const apiBase = process.env.NEXT_PUBLIC_API_URL || "";
-
 export class ApiError extends Error {
   constructor(message, status) {
     super(message);
@@ -8,120 +6,20 @@ export class ApiError extends Error {
   }
 }
 
-function backendPath(path) {
-  const [pathname, search = ""] = path.split("?", 2);
-  const params = new URLSearchParams(search);
-  const aliases = {
-    search: "q",
-    categoryId: "category_id",
-    dateFrom: "from",
-    dateTo: "to",
-    pageSize: "page_size",
-  };
+async function readResponse(response) {
+  if (response.status === 204) return null;
 
-  for (const [frontendName, backendName] of Object.entries(aliases)) {
-    if (params.has(frontendName)) {
-      params.set(backendName, params.get(frontendName));
-      params.delete(frontendName);
-    }
-  }
-
-  if (pathname === "/dashboard" && params.has("period")) {
-    const period = params.get("period");
-    params.set("year", period === "lastYear" ? "previous" : "current");
-    params.delete("period");
-  }
-
-  const query = params.toString();
-  return query ? `${pathname}?${query}` : pathname;
+  const contentType = response.headers.get("content-type") || "";
+  return contentType.includes("application/json")
+    ? response.json()
+    : response.text();
 }
 
-function normalizeUser(user) {
-  return {
-    ...user,
-    appearance: user.appearance[0].toUpperCase() + user.appearance.slice(1),
-  };
-}
-
-function normalizeExpense(expense) {
-  return {
-    ...expense,
-    category: { id: expense.categoryId, name: expense.categoryName },
-    subcategory: { id: expense.subcategoryId, name: expense.subcategoryName },
-  };
-}
-
-function normalizeResponse(path, body) {
-  const pathname = path.split("?", 1)[0];
-
-  if (pathname === "/auth/me" || pathname === "/auth/login" ||
-      pathname === "/auth/signup" || pathname === "/users/me" ||
-      pathname === "/users/me/preferences") {
-    return { user: normalizeUser(body) };
+function errorMessage(body, fallback) {
+  if (typeof body === "object" && body?.error) {
+    return typeof body.error === "string" ? body.error : body.error.message || fallback;
   }
-  if (pathname === "/categories" && Array.isArray(body)) {
-    return { categories: body };
-  }
-  if (pathname === "/categories" && body?.id) {
-    return { category: body };
-  }
-  if (/^\/categories\/[^/]+$/.test(pathname) &&
-      (body?.id || body?.name)) {
-    return { category: body };
-  }
-  if (pathname === "/expenses" && Array.isArray(body?.items)) {
-    return {
-      items: body.items.map(normalizeExpense),
-      total: body.totalItems,
-      summary: {
-        totalCount: body.totalItems,
-        totalsByCurrency: Object.fromEntries(
-          body.totals.map(({ currency, total }) => [currency, total]),
-        ),
-      },
-    };
-  }
-  if (/^\/expenses\/[^/]+$/.test(pathname) && body?.categoryName) {
-    return { expenditure: normalizeExpense(body) };
-  }
-  if (pathname === "/dashboard") {
-    const categoryTotal = body.categoryBreakdown.reduce(
-      (total, item) => total + Number(item.amount),
-      0,
-    );
-    return {
-      summary: {
-        totalAmount: body.totalAmount,
-        overallCount: body.totalCount +
-          body.otherCurrencies.reduce((total, item) => total + item.count, 0),
-        monthAmount: body.currentMonth.amount,
-        monthCount: body.currentMonth.count,
-        yearCount: body.yearCount,
-        monthChangePercent: body.monthOverMonthChangePercent,
-      },
-      monthly: body.monthlyTrend.map((item) => ({
-        ...item,
-        amount: Number(item.amount),
-      })),
-      categories: body.categoryBreakdown.map((item) => ({
-        name: item.category,
-        amount: Number(item.amount),
-        percentage: categoryTotal
-          ? Math.round(Number(item.amount) / categoryTotal * 100)
-          : 0,
-      })),
-      recent: body.recent.map(normalizeExpense),
-    };
-  }
-  return body;
-}
-
-function requestBody(path, body) {
-  if (path.split("?", 1)[0] !== "/users/me/preferences" ||
-      typeof body?.appearance !== "string") {
-    return body;
-  }
-  return { ...body, appearance: body.appearance.toLowerCase() };
+  return typeof body === "string" && body ? body : fallback;
 }
 
 export async function apiRequest(path, options = {}) {
@@ -132,12 +30,8 @@ export async function apiRequest(path, options = {}) {
 
   let response;
   try {
-    const body = options.body && !(options.body instanceof FormData)
-      ? requestBody(path, JSON.parse(options.body))
-      : options.body;
-    response = await fetch(`${apiBase}/api${backendPath(path)}`, {
+    response = await fetch(`/api${path}`, {
       ...options,
-      body: body && !(body instanceof FormData) ? JSON.stringify(body) : body,
       headers,
       credentials: "include",
     });
@@ -147,19 +41,11 @@ export async function apiRequest(path, options = {}) {
     });
   }
 
-  if (response.status === 204) return null;
-
-  const contentType = response.headers.get("content-type") || "";
-  const body = contentType.includes("application/json")
-    ? await response.json()
-    : await response.text();
+  const body = await readResponse(response);
   if (!response.ok) {
-    const message = typeof body === "object" && body?.error
-      ? body.error.message || body.error
-      : "The request could not be completed.";
-    throw new ApiError(message, response.status);
+    throw new ApiError(errorMessage(body, "The request could not be completed."), response.status);
   }
-  return normalizeResponse(path, body);
+  return body;
 }
 
 export function apiGet(path, options) {
@@ -181,23 +67,15 @@ export function apiDelete(path) {
 export async function apiDownload(path, fallbackName) {
   let response;
   try {
-    response = await fetch(`${apiBase}/api${backendPath(path)}`, { credentials: "include" });
+    response = await fetch(`/api${path}`, { credentials: "include" });
   } catch (error) {
     throw new Error("Unable to connect to Spendora. Check your connection and try again.", {
       cause: error,
     });
   }
   if (!response.ok) {
-    const contentType = response.headers.get("content-type") || "";
-    const body = contentType.includes("application/json")
-      ? await response.json()
-      : await response.text();
-    const message = typeof body === "object" && body?.error
-      ? body.error.message || body.error
-      : typeof body === "string" && body
-        ? body
-        : "The download could not be created.";
-    throw new ApiError(message, response.status);
+    const body = await readResponse(response);
+    throw new ApiError(errorMessage(body, "The download could not be created."), response.status);
   }
 
   const disposition = response.headers.get("content-disposition") || "";

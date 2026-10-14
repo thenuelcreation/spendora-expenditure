@@ -1,50 +1,52 @@
 # Spendora
 
-Spendora is an expenditure management app with a Next.js frontend and the Go REST API in `go-api`, backed by PostgreSQL.
+Spendora is an expenditure management app with a React/Vite frontend and an Express API in `server`, backed by PostgreSQL and Prisma.
 
 ## Local setup
 
-Requirements: Node.js 20.9 or newer, Go 1.22 or newer, and Docker Desktop (or a reachable PostgreSQL database).
+Requirements: Node.js 20.19 or newer and PostgreSQL 14 or newer.
 
-1. In `go-api`, create a local environment file and set a private session secret:
+1. Create a PostgreSQL database named `spendora`.
+2. Copy `server/.env.example` to `server/.env`. Set `DATABASE_URL` to your local PostgreSQL connection string and replace `JWT_SECRET` with a private random secret of at least 32 characters. Do not commit `.env`.
+3. Install and prepare both apps:
 
    ```powershell
-   Push-Location .\go-api
-   Copy-Item .env.example .env
-   # Edit .env and replace JWT_SECRET with a random secret of at least 32 characters.
-   docker compose up -d
-   go mod tidy
-   go run ./cmd/api
+   Push-Location .\server
+   npm ci
+   npm run db:generate
+   npm run db:deploy
+   Pop-Location
+   Push-Location .\frontend
+   npm ci
+   Pop-Location
    ```
 
-   Leave this terminal open. The API runs on `http://localhost:8080` and applies its database migrations at startup. If you already have PostgreSQL, set `DATABASE_URL` in `go-api/.env` to that database instead of starting the bundled database.
-
-2. In a second terminal, start the frontend:
+4. Start the API and frontend together from the project root:
 
    ```powershell
-   Push-Location .\frontend
-   npm install
    npm run dev
    ```
 
-   Open `http://localhost:3000`. Next.js proxies `/api` to `http://localhost:8080` by default, so the browser uses the API through the frontend's same origin.
+Open `http://localhost:5173`. The API checks its PostgreSQL connection before listening on port 4000; if the database is unavailable, the terminal reports the connection error. Vite shows an explicit API-offline message instead of a generic failed request. The frontend uses an HttpOnly, SameSite session cookie; authentication tokens are not stored in browser local storage. Each account owns its own expenditures and categories.
 
-The frontend uses an HttpOnly, SameSite session cookie; authentication tokens are not stored in browser local storage. Each account owns its own expenditures and categories. The previous Express/Prisma API source remains in `server`, but the frontend is now connected to the Go API. The Go API uses its own PostgreSQL tables; existing Express/Prisma records are not automatically migrated or shared.
+If your local PostgreSQL server asks for a password, use that account's connection details in `DATABASE_URL`, for example `postgresql://YOUR_USER:YOUR_PASSWORD@localhost:5432/spendora`. Create the `spendora` database first if it does not already exist. The root development command checks for the backend configuration before starting either app.
 
-## Deployment configuration
+## Deployment: Render API and Vercel frontend
 
-### Deploy the Go API and database to Render
+### Deploy the API and database to Render
 
-1. Push this project to a GitHub repository if it is not there already. In Render, choose **New → Blueprint**, connect that repository, and deploy the checked-in [`render.yaml`](./render.yaml). It creates the Go web service and PostgreSQL database; Render generates `JWT_SECRET` for you.
-2. After the first deploy finishes, open the `spendora-api` service in Render and copy its public URL, for example `https://spendora-api.onrender.com`. Check `https://YOUR-RENDER-URL/api/health`; it should return `{"status":"ok"}`.
-3. In Vercel, import the same GitHub repository. Set the project **Root Directory** to `frontend` and add `SPENDORA_API_URL` with the Render URL as its value (no trailing slash). Add it for the environments you deploy, then redeploy so Next.js rebuilds its `/api` proxy to Render.
-4. Leave `NEXT_PUBLIC_API_URL` unset in Vercel. The browser should call the Vercel `/api` path, which proxies requests to Render; this keeps the HttpOnly session cookie on the frontend's origin. Go API migrations run automatically when the Render service starts.
+1. Push this project to a GitHub repository.
+2. In Render, choose **New → Blueprint**, connect the repository, and deploy the checked-in `render.yaml`. It creates a Node web service rooted at `server` and a PostgreSQL database. Render generates a private `JWT_SECRET`; Prisma migrations run when the API starts.
+3. Wait for the service to deploy. Copy its public URL and check `https://YOUR-RENDER-URL/api/health`; it should return `{"status":"ok"}`.
 
-The Render Blueprint uses free plans to make initial setup cost-free. Free Render services can sleep when idle, and free PostgreSQL databases are temporary; upgrade the database to a persistent paid plan before relying on it for production data. Render and Vercel both need access to the GitHub repository to deploy updates.
+### Deploy the frontend to Vercel
 
-For a direct browser-to-API deployment instead of the Vercel proxy, configure `CORS_ORIGIN` in Render with the exact Vercel origin(s), and use a custom domain setup that keeps the frontend and API on the same site so session cookies work. `CORS_ORIGIN` accepts comma-separated exact origins.
+1. Import the same repository into Vercel and set **Root Directory** to `frontend`.
+2. In `frontend/vercel.json`, replace `https://spendora-api.onrender.com` with the exact Render service URL if it differs.
+3. Deploy the Vercel project. Vercel serves the static Vite app and proxies `/api` to Render; browser refreshes on app routes are rewritten to the SPA entry page.
+4. In Render, set `CORS_ORIGIN` to the exact Vercel origin shown in the browser (for example, `https://your-project.vercel.app`, without a trailing slash). Add your custom frontend origin too if you use one, then save so Render restarts the API.
 
-Do not put production database credentials or the session signing secret in this repository. A deployed application also needs a reachable PostgreSQL instance.
+The proxy keeps the HttpOnly session cookie on the frontend's origin. Free Render web services can sleep when idle, and free PostgreSQL databases are temporary; upgrade the database before relying on it for production data. Never commit production database credentials or the session signing secret.
 
 ## Implemented backend features
 

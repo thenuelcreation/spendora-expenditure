@@ -13,7 +13,7 @@ out
 dist
 dist-ssr
 *.local
-/go-api/.env
+/server/.env
 
 # Editor directories and files
 .vscode/*

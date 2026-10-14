@@ -17,7 +17,7 @@ const app = express();
 const port = Number(process.env.PORT || 4000);
 const jwtSecret = process.env.JWT_SECRET;
 const databaseUrl = process.env.DATABASE_URL;
-const allowedOrigins = (process.env.CORS_ORIGIN || "http://localhost:3000")
+const allowedOrigins = (process.env.CORS_ORIGIN || "http://localhost:5173,http://localhost:3000")
   .split(",")
   .map((origin) => origin.trim())
   .filter(Boolean);
@@ -774,12 +774,35 @@ app.use((error, _req, res, _next) => {
   return sendError(res, 500, "An unexpected server error occurred.");
 });
 
-const server = app.listen(port, () => {
-  console.log(`Spendora API listening on port ${port}.`);
-});
+let server;
+
+async function start() {
+  try {
+    await prisma.$connect();
+    await prisma.$queryRaw`SELECT 1`;
+  } catch (error) {
+    console.error("Could not connect to PostgreSQL. Check DATABASE_URL and ensure the database is running.", error);
+    await prisma.$disconnect();
+    process.exitCode = 1;
+    return;
+  }
+
+  server = app.listen(port, () => {
+    console.log(`Spendora API listening on port ${port}.`);
+  });
+  server.on("error", (error) => {
+    console.error(`Spendora API could not listen on port ${port}.`, error);
+    process.exitCode = 1;
+    void prisma.$disconnect();
+  });
+}
 
 async function shutdown(signal) {
   console.log(`${signal} received; shutting down Spendora API.`);
+  if (!server) {
+    await prisma.$disconnect();
+    return;
+  }
   server.close(async (error) => {
     if (error) {
       console.error(error);
@@ -791,3 +814,5 @@ async function shutdown(signal) {
 
 process.on("SIGINT", () => shutdown("SIGINT"));
 process.on("SIGTERM", () => shutdown("SIGTERM"));
+
+void start();

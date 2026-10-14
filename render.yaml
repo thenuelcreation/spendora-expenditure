@@ -1,14 +1,14 @@
 services:
   - type: web
     name: spendora-api
-    runtime: go
+    runtime: node
     plan: free
-    rootDir: go-api
-    buildCommand: go build -o bin/spendora ./cmd/api
-    startCommand: ./bin/spendora
+    rootDir: server
+    buildCommand: npm ci && npm run db:generate
+    startCommand: npm run db:deploy && npm start
     healthCheckPath: /api/health
     envVars:
-      - key: APP_ENV
+      - key: NODE_ENV
         value: production
       - key: DATABASE_URL
         fromDatabase:

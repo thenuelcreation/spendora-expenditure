@@ -11,6 +11,9 @@
     "db:deploy": "prisma migrate deploy",
     "test": "node --test"
   },
+  "engines": {
+    "node": ">=20.19"
+  },
   "keywords": [],
   "author": "",
   "license": "ISC",
