@@ -1,0 +1,70 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id                String       @id @default(cuid())
+  name              String
+  email             String       @unique
+  passwordHash      String
+  appearance        String       @default("System")
+  notifications     Boolean      @default(true)
+  preferredCurrency String       @default("NGN")
+  categories        Category[]
+  expenditures     Expenditure[]
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
+}
+
+model Category {
+  id            String        @id @default(cuid())
+  userId        String
+  name          String
+  description   String        @default("")
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  subcategories Subcategory[]
+  expenditures  Expenditure[]
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  @@unique([userId, name])
+  @@index([userId])
+}
+
+model Subcategory {
+  id            String        @id @default(cuid())
+  categoryId    String
+  name          String
+  category      Category      @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  expenditures  Expenditure[]
+  createdAt     DateTime      @default(now())
+
+  @@unique([categoryId, name])
+  @@index([categoryId])
+}
+
+model Expenditure {
+  id            String      @id @default(cuid())
+  userId        String
+  categoryId    String
+  subcategoryId String
+  date          DateTime    @db.Date
+  amount        Decimal     @db.Decimal(14, 2)
+  currency      String      @default("NGN")
+  paymentMethod String
+  description   String      @default("")
+  vendor        String      @default("")
+  reference     String      @default("")
+  user          User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  category      Category    @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  subcategory   Subcategory @relation(fields: [subcategoryId], references: [id], onDelete: Restrict)
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  @@index([userId, date])
+  @@index([userId, categoryId])
+}

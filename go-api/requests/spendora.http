@@ -1,0 +1,173 @@
+# Spendora API requests — use with the "REST Client" extension in VS Code (humao.rest-client).
+# Cookies are kept automatically, so run "Sign up" or "Log in" first, then the rest.
+# Requests with "# @name x" can be referenced by later ones ({{x.response.body...}}).
+
+@baseUrl = http://localhost:8080
+@json = application/json
+
+### Health
+GET {{baseUrl}}/api/health
+
+### ---------- AUTH ----------
+
+### Sign up (creates the account + starter categories, sets session cookie)
+POST {{baseUrl}}/api/auth/signup
+Content-Type: {{json}}
+
+{
+  "name": "Emmanuel Okam",
+  "email": "emmanuel@example.com",
+  "password": "supersecret123"
+}
+
+### Log in
+POST {{baseUrl}}/api/auth/login
+Content-Type: {{json}}
+
+{
+  "email": "emmanuel@example.com",
+  "password": "supersecret123"
+}
+
+### Current user
+GET {{baseUrl}}/api/auth/me
+
+### Log out
+POST {{baseUrl}}/api/auth/logout
+
+### ---------- ACCOUNT ----------
+
+### Update name / email
+PATCH {{baseUrl}}/api/users/me
+Content-Type: {{json}}
+
+{
+  "name": "Emmanuel U. Okam"
+}
+
+### Update preferences (appearance: system|light|dark, preferredCurrency: NGN|USD|GBP|EUR)
+PATCH {{baseUrl}}/api/users/me/preferences
+Content-Type: {{json}}
+
+{
+  "appearance": "dark",
+  "notificationsEnabled": true,
+  "preferredCurrency": "NGN"
+}
+
+### Change password
+PATCH {{baseUrl}}/api/users/me/password
+Content-Type: {{json}}
+
+{
+  "currentPassword": "supersecret123",
+  "newPassword": "evenbetter456"
+}
+
+### ---------- CATEGORIES ----------
+
+### List categories (with sub-categories)
+# @name categories
+GET {{baseUrl}}/api/categories
+
+### Create a category (sub-categories optional)
+# @name newCategory
+POST {{baseUrl}}/api/categories
+Content-Type: {{json}}
+
+{
+  "name": "Insurance",
+  "description": "Policies and premiums",
+  "subcategories": ["Health", "Vehicle"]
+}
+
+### Rename / re-describe a category
+PATCH {{baseUrl}}/api/categories/{{newCategory.response.body.id}}
+Content-Type: {{json}}
+
+{
+  "name": "Insurance & Cover"
+}
+
+### Add a sub-category
+# @name newSub
+POST {{baseUrl}}/api/categories/{{newCategory.response.body.id}}/subcategories
+Content-Type: {{json}}
+
+{
+  "name": "Property"
+}
+
+### Rename a sub-category
+PATCH {{baseUrl}}/api/subcategories/{{newSub.response.body.id}}
+Content-Type: {{json}}
+
+{
+  "name": "Property & Contents"
+}
+
+### Delete a sub-category (409 if expenditures use it)
+DELETE {{baseUrl}}/api/subcategories/{{newSub.response.body.id}}
+
+### Delete a category (409 if expenditures use it)
+DELETE {{baseUrl}}/api/categories/{{newCategory.response.body.id}}
+
+### ---------- EXPENDITURES ----------
+# Run "List categories" first: these use the first category and its first sub-category.
+
+### Create an expenditure
+# @name createExpense
+POST {{baseUrl}}/api/expenses
+Content-Type: {{json}}
+
+{
+  "date": "2026-10-12",
+  "categoryId": "{{categories.response.body.$[0].id}}",
+  "subcategoryId": "{{categories.response.body.$[0].subcategories[0].id}}",
+  "amount": 15000.50,
+  "currency": "NGN",
+  "paymentMethod": "Bank Transfer",
+  "vendor": "Shoprite",
+  "reference": "INV-1042",
+  "description": "Printer paper and toner"
+}
+
+### List expenditures (page 1)
+GET {{baseUrl}}/api/expenses?page=1&page_size=20
+
+### Search + filter by period (all | this_month | last_3_months | this_year)
+GET {{baseUrl}}/api/expenses?q=shoprite&period=this_month&page=1&page_size=10
+
+### Filter by category and custom date range (inclusive) and currency
+GET {{baseUrl}}/api/expenses?category_id={{categories.response.body.$[0].id}}&from=2026-10-01&to=2026-10-31&currency=NGN
+
+### Get one expenditure
+GET {{baseUrl}}/api/expenses/{{createExpense.response.body.id}}
+
+### Update an expenditure (send only the fields that change)
+PATCH {{baseUrl}}/api/expenses/{{createExpense.response.body.id}}
+Content-Type: {{json}}
+
+{
+  "amount": 16250,
+  "description": "Printer paper, toner and staples"
+}
+
+### Delete an expenditure
+DELETE {{baseUrl}}/api/expenses/{{createExpense.response.body.id}}
+
+### ---------- DASHBOARD ----------
+
+### Dashboard (defaults: current year, your preferred currency)
+GET {{baseUrl}}/api/dashboard
+
+### Dashboard for last year in USD
+GET {{baseUrl}}/api/dashboard?year=previous&currency=USD
+
+### ---------- EXPORT ----------
+
+### Export preview: record count + totals by currency
+GET {{baseUrl}}/api/expenses/export/summary?period=this_year
+
+### Download CSV (all | this_month | last_3_months | this_year)
+GET {{baseUrl}}/api/expenses/export?period=this_year
