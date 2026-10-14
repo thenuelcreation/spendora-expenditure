@@ -578,6 +578,64 @@ app.get("/api/expenses/:id", requireAuth, async (req, res) => {
   return res.json({ expenditure: serializeExpense(expense) });
 });
 
+app.post("/api/expenses/bulk", requireAuth, async (req, res) => {
+  const expenses = req.body?.expenses;
+  if (!Array.isArray(expenses) || expenses.length === 0) {
+    return sendError(res, 400, "Add at least one expenditure record.");
+  }
+
+  for (const [index, expense] of expenses.entries()) {
+    const error = validateExpense(expense || {});
+    if (error) return sendError(res, 400, `Record ${index + 1}: ${error}`);
+  }
+
+  const result = await prisma.$transaction(async (transaction) => {
+    for (const [index, expense] of expenses.entries()) {
+      const category = await transaction.category.findFirst({
+        where: {
+          id: expense.categoryId,
+          userId: req.userId,
+          subcategories: { some: { id: expense.subcategoryId } },
+        },
+        select: { id: true },
+      });
+      if (!category) {
+        return {
+          error: `Record ${index + 1}: Choose a sub-category belonging to that category.`,
+        };
+      }
+    }
+
+    const created = [];
+    for (const expense of expenses) {
+      created.push(
+        await transaction.expenditure.create({
+          data: {
+            userId: req.userId,
+            categoryId: expense.categoryId,
+            subcategoryId: expense.subcategoryId,
+            date: new Date(`${expense.date}T00:00:00.000Z`),
+            amount: expense.amount,
+            currency: expense.currency,
+            paymentMethod: expense.paymentMethod,
+            description: (expense.description || "").trim(),
+            vendor: (expense.vendor || "").trim(),
+            reference: (expense.reference || "").trim(),
+          },
+          include: { category: true, subcategory: true },
+        }),
+      );
+    }
+
+    return { created };
+  });
+
+  if (result.error) return sendError(res, 400, result.error);
+  return res.status(201).json({
+    expenditures: result.created.map(serializeExpense),
+  });
+});
+
 app.post("/api/expenses", requireAuth, async (req, res) => {
   const error = validateExpense(req.body || {});
   if (error) return sendError(res, 400, error);

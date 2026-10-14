@@ -2299,16 +2299,40 @@ textarea:focus {
 .quick-entry-banner {
   margin: 22px 22px 0;
   padding: 15px 17px;
+  width: calc(100% - 44px);
   display: flex;
   align-items: center;
   gap: 12px;
   border: 1px solid #e5dbff;
   border-radius: 14px;
   background: linear-gradient(135deg, #faf7ff, #f5f0ff);
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 160ms ease, box-shadow 160ms ease;
 }
 
-.quick-entry-banner > div:last-child {
+.quick-entry-banner:hover {
+  border-color: #c4b5fd;
+  box-shadow: 0 3px 12px rgb(109 40 217 / 8%);
+}
+
+.quick-entry-banner:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.quick-entry-banner:focus-visible {
+  outline: 3px solid rgb(109 40 217 / 35%);
+  outline-offset: 3px;
+}
+
+.quick-entry-copy {
   min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
 }
 
 .quick-entry-icon {
@@ -2322,18 +2346,12 @@ textarea:focus {
   background: linear-gradient(135deg, #6d28d9, #8b5cf6);
 }
 
-.quick-entry-banner div:last-child {
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-}
-
 .quick-entry-banner strong {
   color: #33225d;
   font-size: 12px;
 }
 
-.quick-entry-banner span {
+.quick-entry-copy > span {
   color: #827b91;
   font-size: 10px;
 }
@@ -2362,6 +2380,49 @@ textarea:focus {
 .form-section-title span {
   color: #a09aa9;
   font-size: 10px;
+}
+
+.quick-entry-record-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 8px 14px;
+}
+
+.quick-entry-details-toggle,
+.quick-entry-remove {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 0;
+  border: 0;
+  color: #6d28d9;
+  background: transparent;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.quick-entry-remove {
+  color: #b42318;
+}
+
+.quick-entry-details-toggle:disabled,
+.quick-entry-remove:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.quick-entry-details-toggle[aria-expanded="true"] svg {
+  transform: rotate(180deg);
+}
+
+.quick-entry-additional-info {
+  margin-top: 22px;
+  padding-top: 22px;
+  border-top: 1px solid var(--border-light);
 }
 
 .form-grid {
@@ -6522,10 +6583,11 @@ textarea:focus-visible {
     align-items: flex-start;
     gap: 10px;
     margin: 12px 12px 0;
+    width: calc(100% - 24px);
     padding: 12px;
   }
 
-  .quick-entry-banner span {
+  .quick-entry-copy > span {
     line-height: 1.5;
   }
 
@@ -6537,6 +6599,15 @@ textarea:focus-visible {
     flex-wrap: wrap;
     gap: 7px 12px;
     margin-bottom: 17px;
+  }
+
+  .quick-entry-record-actions {
+    justify-content: flex-start;
+  }
+
+  .quick-entry-additional-info {
+    margin-top: 17px;
+    padding-top: 17px;
   }
 
   .add-expenditure-screen .form-actions {
