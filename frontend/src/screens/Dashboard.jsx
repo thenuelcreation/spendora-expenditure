@@ -7,6 +7,7 @@ import {
   Plus,
   Receipt,
   Settings,
+  Tags,
   TrendingUp,
   Wallet,
   CreditCard,
@@ -68,7 +69,7 @@ function Dashboard() {
           <p className="nav-label">MENU</p>
           <Link className="nav-item active" to="/dashboard"><Wallet size={18} />Dashboard</Link>
           <Link className="nav-item" to="/expenditures"><Receipt size={18} />Expenditures</Link>
-          <Link className="nav-item" to="/categories"><Settings size={18} />Categories</Link>
+          <Link className="nav-item" to="/categories"><Tags size={18} />Categories</Link>
           <Link className="nav-item" to="/export"><Download size={18} />Export to Excel</Link>
           <p className="nav-label second-label">ACCOUNT</p>
           <Link className="nav-item" to="/profile"><Wallet size={18} />Profile</Link>
@@ -215,7 +216,7 @@ function Dashboard() {
         <Link className="mobile-nav-item active" to="/dashboard"><Wallet size={19} /><span>Dashboard</span></Link>
         <Link className="mobile-nav-item" to="/expenditures"><Receipt size={19} /><span>Expenditures</span></Link>
         <Link className="mobile-add" to="/expenditures/add" aria-label="Add expenditure"><Plus size={23} /></Link>
-        <Link className="mobile-nav-item" to="/categories"><Settings size={19} /><span>Categories</span></Link>
+        <Link className="mobile-nav-item" to="/categories"><Tags size={19} /><span>Categories</span></Link>
         <Link className="mobile-nav-item" to="/settings"><Settings size={19} /><span>Settings</span></Link>
       </nav>
     </div>

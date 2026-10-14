@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { Folder, Plus, Tag, X } from "lucide-react";
+import { useEffect, useState } from "react";
 
 function CategoryModal({
   isOpen,
@@ -17,6 +18,19 @@ function CategoryModal({
   );
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    setName(category?.name || "");
+    setDescription(category?.description || "");
+    setSubcategories(
+      category?.subcategories?.length
+        ? category.subcategories.map((item) => typeof item === "string"
+          ? { name: item }
+          : { id: item.id, name: item.name })
+        : [{ name: "" }]
+    );
+    setError("");
+  }, [category, isOpen]);
 
   if (!isOpen) return null;
 
@@ -65,20 +79,25 @@ function CategoryModal({
   };
 
   return (
-    <div className="modal-overlay">
-      <div className="category-modal">
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="category-modal" onClick={(event) => event.stopPropagation()}>
         <div className="modal-header">
-          <div>
-            <h2>{category ? "Edit category" : "Add category"}</h2>
-            <p>Create and manage your expenditure categories.</p>
+          <div className="modal-header-copy">
+            <div className="modal-header-icon">
+              {category ? <Folder size={18} /> : <Plus size={18} />}
+            </div>
+            <div>
+              <h2>{category ? "Edit category" : "Add category"}</h2>
+              <p>{category ? "Update the category details and sub-categories." : "Create a new spending category and organize sub-items."}</p>
+            </div>
           </div>
 
-          <button type="button" onClick={onClose}>
-            ×
+          <button type="button" className="modal-close-button" onClick={onClose} aria-label="Close dialog">
+            <X size={18} />
           </button>
         </div>
 
-        <form onSubmit={handleSubmit}>
+        <form className="category-modal-form" onSubmit={handleSubmit}>
           <div className="form-field">
             <label htmlFor="categoryName">
               Category name <span>*</span>
@@ -122,7 +141,8 @@ function CategoryModal({
                 className="small-add-button"
                 onClick={addSubcategory}
               >
-                + Add
+                <Plus size={12} />
+                Add
               </button>
             </div>
 
@@ -132,6 +152,9 @@ function CategoryModal({
                   className="subcategory-input-row"
                   key={subcategory.id || `new-${index}`}
                 >
+                  <div className="subcategory-input-icon">
+                    <Tag size={14} />
+                  </div>
                   <input
                     value={subcategory.name}
                     onChange={(event) =>
@@ -143,9 +166,11 @@ function CategoryModal({
                   {subcategories.length > 1 && (
                     <button
                       type="button"
+                      className="remove-subcategory-button"
                       onClick={() => removeSubcategory(index)}
+                      aria-label="Remove sub-category"
                     >
-                      ×
+                      <X size={14} />
                     </button>
                   )}
                 </div>

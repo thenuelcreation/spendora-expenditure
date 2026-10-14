@@ -1,8 +1,8 @@
 import {
   ArrowLeft,
-  ChevronRight,
   Folder,
   MoreHorizontal,
+  Pencil,
   Plus,
   Tag,
   Trash2,
@@ -16,6 +16,7 @@ function Categories() {
   const navigate = useNavigate();
   const [categories, setCategories] = useState([]);
   const [editingCategory, setEditingCategory] = useState(null);
+  const [menuCategoryId, setMenuCategoryId] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [view, setView] = useState("categories");
   const [loading, setLoading] = useState(true);
@@ -62,9 +63,22 @@ function Categories() {
       await apiDelete(`/categories/${category.id}`);
       setCategories((current) => current.filter((item) => item.id !== category.id));
       setError("");
+      setMenuCategoryId(null);
     } catch (requestError) {
       setError(requestError.message);
     }
+  };
+
+  const openCreateModal = () => {
+    setEditingCategory(null);
+    setMenuCategoryId(null);
+    setModalOpen(true);
+  };
+
+  const openEditModal = (category) => {
+    setEditingCategory(category);
+    setMenuCategoryId(null);
+    setModalOpen(true);
   };
 
   return (
@@ -94,10 +108,7 @@ function Categories() {
         <button
           type="button"
           className="spendora-page-header-action"
-          onClick={() => {
-            setEditingCategory(null);
-            setModalOpen(true);
-          }}
+          onClick={openCreateModal}
         >
           <Plus size={17} />
           <span>Add Category</span>
@@ -123,89 +134,92 @@ function Categories() {
         </div>
 
         {/* Categories */}
-        <div className="category-management">
-          {loading ? <p>Loading categories...</p> : categories.length === 0 ? (
+        {loading ? (
+          <p className="category-table-message">Loading categories...</p>
+        ) : categories.length === 0 ? (
+          <div className="category-table-empty">
+            <Folder size={24} />
             <p>No categories yet. Add a category to organize your expenditures.</p>
-          ) : view === "categories" ? categories.map((category) => (
-            <article
-              className="management-card"
-              key={category.name}
-            >
-              {/* Card Header */}
-              <div className="management-header">
-                <div className="management-title">
-                  <div className="management-icon">
-                    <Folder size={18} />
-                  </div>
-
-                  <div>
-                    <strong>{category.name}</strong>
-                    <span>
-                      {category.subcategories.length}{" "}
-                      {category.subcategories.length === 1
-                        ? "sub-category"
-                        : "sub-categories"}
-                    </span>
-                  </div>
-                </div>
-
-                <button
-                  type="button"
-                  className="more-button"
-                  aria-label={`More options for ${category.name}`}
-                  title="More options"
-                  onClick={() => {
-                    setEditingCategory(category);
-                    setModalOpen(true);
-                  }}
-                >
-                  <MoreHorizontal size={18} />
-                </button>
-                <button
-                  type="button"
-                  className="more-button"
-                  aria-label={`Delete ${category.name}`}
-                  title="Delete category"
-                  onClick={() => deleteCategory(category)}
-                >
-                  <Trash2 size={16} />
-                </button>
-              </div>
-
-              {/* Subcategories */}
-              <div className="subcategory-list">
-                {category.subcategories.map((item) => (
-                  <div
-                    className="subcategory-item"
-                    key={item.id}
-                  >
-                    <span>
-                      <Tag size={14} />
-                      {item.name}
-                    </span>
-
-                    <ChevronRight size={15} />
-                  </div>
-                ))}
-              </div>
-            </article>
-          )) : categories.flatMap((category) => category.subcategories.map((subcategory) => (
-            <article className="management-card" key={subcategory.id}>
-              <div className="management-header">
-                <div className="management-title">
-                  <div className="management-icon"><Tag size={18} /></div>
-                  <div><strong>{subcategory.name}</strong><span>{category.name}</span></div>
-                </div>
-                <button type="button" className="more-button" title={`Edit ${category.name}`} aria-label={`Edit parent category ${category.name}`} onClick={() => {
-                  setEditingCategory(category);
-                  setModalOpen(true);
-                }}>
-                  <MoreHorizontal size={18} />
-                </button>
-              </div>
-            </article>
-          )))}
-        </div>
+            <button type="button" className="spendora-page-header-action" onClick={openCreateModal}>
+              <Plus size={17} />
+              Add Category
+            </button>
+          </div>
+        ) : (
+          <div className="category-table-container">
+            <table className="category-table">
+              <thead>
+                <tr>
+                  <th>{view === "categories" ? "Category" : "Sub-category"}</th>
+                  <th>{view === "categories" ? "Description" : "Parent category"}</th>
+                  {view === "categories" && <th>Sub-categories</th>}
+                  <th><span className="visually-hidden">Actions</span></th>
+                </tr>
+              </thead>
+              <tbody>
+                {view === "categories" ? categories.map((category) => (
+                  <tr key={category.id}>
+                    <td>
+                      <div className="category-table-name">
+                        <span className="category-table-icon"><Folder size={17} /></span>
+                        <strong>{category.name}</strong>
+                      </div>
+                    </td>
+                    <td>{category.description || <span className="category-table-muted">No description</span>}</td>
+                    <td>
+                      <span className="subcategory-count">
+                        {category.subcategories.length}{" "}
+                        {category.subcategories.length === 1 ? "sub-category" : "sub-categories"}
+                      </span>
+                    </td>
+                    <td className="category-table-actions-cell">
+                      <div className="management-actions">
+                        <button
+                          type="button"
+                          className="more-button"
+                          aria-label={`More options for ${category.name}`}
+                          title="More options"
+                          aria-expanded={menuCategoryId === category.id}
+                          onClick={() => setMenuCategoryId((current) => current === category.id ? null : category.id)}
+                        >
+                          <MoreHorizontal size={18} />
+                        </button>
+                        {menuCategoryId === category.id && (
+                          <div className="category-menu">
+                            <button type="button" onClick={() => openEditModal(category)}>
+                              <Pencil size={14} />
+                              Edit category
+                            </button>
+                            <button type="button" className="danger" onClick={() => deleteCategory(category)}>
+                              <Trash2 size={14} />
+                              Delete category
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                )) : categories.flatMap((category) => category.subcategories.map((subcategory) => (
+                  <tr key={subcategory.id}>
+                    <td>
+                      <div className="category-table-name">
+                        <span className="category-table-icon subcategory-table-icon"><Tag size={16} /></span>
+                        <strong>{subcategory.name}</strong>
+                      </div>
+                    </td>
+                    <td>{category.name}</td>
+                    <td className="category-table-actions-cell">
+                      <button type="button" className="category-table-edit" onClick={() => openEditModal(category)}>
+                        <Pencil size={14} />
+                        Edit parent
+                      </button>
+                    </td>
+                  </tr>
+                )))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </main>
       {modalOpen && (
         <CategoryModal
