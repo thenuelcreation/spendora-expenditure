@@ -1,7 +1,27 @@
 import { ArrowRight, Check, CirclePlus, Download, FileSpreadsheet, Hexagon, Orbit, ShieldCheck, Sparkles, Zap } from "lucide-react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 
+const demoChartSnapshots = [
+  [35, 52, 42, 68, 56, 82, 64],
+  [43, 47, 58, 61, 72, 76, 69],
+  [38, 60, 49, 74, 63, 86, 72],
+  [48, 55, 66, 70, 59, 80, 77],
+];
+
 function Landing() {
+  const [totalExpenditure, setTotalExpenditure] = useState(345680);
+  const [chartStep, setChartStep] = useState(0);
+
+  useEffect(() => {
+    const interval = window.setInterval(() => {
+      setTotalExpenditure((total) => total + 1250);
+      setChartStep((step) => (step + 1) % demoChartSnapshots.length);
+    }, 2400);
+
+    return () => window.clearInterval(interval);
+  }, []);
+
   return (
     <main className="landing">
       <nav className="landing-nav">
@@ -104,18 +124,18 @@ function Landing() {
 
               <div className="phone-total">
                 <small>Total Expenditure</small>
-                <strong>₦345,680</strong>
-                <span>+12% this month</span>
+                <strong>₦{totalExpenditure.toLocaleString("en-NG")}</strong>
+                <span>Live demo · +₦1,250 every few seconds</span>
               </div>
 
-              <div className="phone-chart">
-                <i style={{ height: "35%" }} />
-                <i style={{ height: "52%" }} />
-                <i style={{ height: "42%" }} />
-                <i style={{ height: "68%" }} />
-                <i style={{ height: "56%" }} />
-                <i style={{ height: "82%" }} />
-                <i style={{ height: "64%" }} />
+              <div
+                className="phone-chart"
+                role="img"
+                aria-label="Animated sample expenditure chart"
+              >
+                {demoChartSnapshots[chartStep].map((height, index) => (
+                  <i key={index} style={{ height: `${height}%` }} />
+                ))}
               </div>
 
               <button>+ Add Expenditure</button>

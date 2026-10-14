@@ -81,7 +81,32 @@ body {
   animation: splash-fade-in 350ms ease both;
 }
 
+.splash-screen::before,
+.splash-screen::after {
+  position: absolute;
+  width: min(74vw, 420px);
+  aspect-ratio: 1;
+  border: 1px solid rgba(109, 40, 217, 0.08);
+  border-radius: 50%;
+  content: "";
+  pointer-events: none;
+}
+
+.splash-screen::before {
+  box-shadow: 0 0 0 34px rgba(109, 40, 217, 0.025), 0 0 0 78px rgba(109, 40, 217, 0.02);
+  animation: splash-orbit 24s linear infinite;
+}
+
+.splash-screen::after {
+  width: min(88vw, 510px);
+  border-style: dashed;
+  opacity: 0.6;
+  animation: splash-orbit 36s linear infinite reverse;
+}
+
 .splash-brand {
+  position: relative;
+  z-index: 1;
   display: grid;
   justify-items: center;
   gap: 13px;
@@ -137,10 +162,53 @@ body {
   animation: splash-wordmark-in 650ms 240ms ease both;
 }
 
+.splash-preview {
+  width: 178px;
+  height: 70px;
+  margin-top: 12px;
+  padding: 13px 17px 10px;
+  display: grid;
+  align-content: space-between;
+  border: 1px solid rgba(109, 40, 217, 0.1);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.62);
+  box-shadow: 0 12px 32px rgba(65, 38, 111, 0.07), inset 0 1px 0 #fff;
+  animation: splash-wordmark-in 650ms 340ms ease both;
+}
+
+.splash-preview-bars {
+  height: 29px;
+  display: flex;
+  align-items: end;
+  gap: 8px;
+}
+
+.splash-preview-bars i {
+  flex: 1;
+  height: 45%;
+  border-radius: 4px 4px 2px 2px;
+  background: linear-gradient(180deg, #a78bfa, #6d28d9);
+  animation: splash-bar-rise 1.8s ease-in-out infinite alternate;
+}
+
+.splash-preview-bars i:nth-child(2) { height: 75%; animation-delay: 180ms; }
+.splash-preview-bars i:nth-child(3) { height: 54%; animation-delay: 360ms; }
+.splash-preview-bars i:nth-child(4) { height: 92%; animation-delay: 540ms; }
+.splash-preview-bars i:nth-child(5) { height: 64%; animation-delay: 720ms; }
+.splash-preview-bars i:nth-child(6) { height: 82%; animation-delay: 900ms; }
+
+.splash-preview-label {
+  color: #8a8299;
+  font-size: 7px;
+  font-weight: 800;
+  letter-spacing: 1.25px;
+  text-align: center;
+}
+
 .splash-progress {
   width: 112px;
   height: 3px;
-  margin-top: 36px;
+  margin-top: 24px;
   overflow: hidden;
   border-radius: 99px;
   background: #e9e3f4;
@@ -180,13 +248,26 @@ body {
   to { opacity: 1; }
 }
 
+@keyframes splash-orbit {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes splash-bar-rise {
+  from { transform: scaleY(0.72); transform-origin: bottom; opacity: 0.72; }
+  to { transform: scaleY(1); transform-origin: bottom; opacity: 1; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .splash-screen,
+  .splash-screen::before,
+  .splash-screen::after,
   .splash-logo-mark,
   .splash-logo-mark::before,
   .splash-logo-mark::after,
   .splash-wordmark,
   .splash-tagline,
+  .splash-preview,
+  .splash-preview-bars i,
   .splash-progress > span {
     animation-duration: 0.01ms;
     animation-iteration-count: 1;
@@ -294,6 +375,7 @@ textarea:focus {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  animation: landing-enter 650ms ease both;
 }
 
 .brand {
@@ -366,6 +448,7 @@ textarea:focus {
 .hero-content {
   position: relative;
   z-index: 2;
+  animation: landing-enter 750ms 100ms ease both;
 }
 
 .eyebrow,
@@ -460,10 +543,6 @@ textarea:focus {
   50% { transform: translate3d(8px, -16px, 0) rotate(8deg); }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .holo-icon { animation: none; }
-}
-
 .glow {
   position: absolute;
   width: 430px;
@@ -471,6 +550,7 @@ textarea:focus {
   border-radius: 50%;
   background: rgba(124, 58, 237, 0.15);
   filter: blur(70px);
+  animation: hero-glow 5s ease-in-out infinite;
 }
 
 .dashboard-orb {
@@ -483,6 +563,7 @@ textarea:focus {
   box-shadow:
     30px 35px 70px rgba(48, 25, 93, 0.25),
     inset 0 1px rgba(255, 255, 255, 0.35);
+  animation: dashboard-float 7s ease-in-out infinite;
 }
 
 .phone {
@@ -566,6 +647,35 @@ textarea:focus {
   flex: 1;
   border-radius: 5px 5px 2px 2px;
   background: linear-gradient(to top, #6d28d9, #c4b5fd);
+  animation: chart-bar-breathe 2.4s ease-in-out infinite alternate;
+  transition: height 1.2s cubic-bezier(0.2, 0.75, 0.25, 1);
+}
+
+.phone-chart i:nth-child(2) { animation-delay: 180ms; }
+.phone-chart i:nth-child(3) { animation-delay: 360ms; }
+.phone-chart i:nth-child(4) { animation-delay: 540ms; }
+.phone-chart i:nth-child(5) { animation-delay: 720ms; }
+.phone-chart i:nth-child(6) { animation-delay: 900ms; }
+.phone-chart i:nth-child(7) { animation-delay: 1.08s; }
+
+@keyframes dashboard-float {
+  0%, 100% { transform: translateY(0) rotate(-5deg); }
+  50% { transform: translateY(-9px) rotate(-3deg); }
+}
+
+@keyframes hero-glow {
+  0%, 100% { opacity: 0.65; transform: scale(0.94); }
+  50% { opacity: 1; transform: scale(1.06); }
+}
+
+@keyframes chart-bar-breathe {
+  from { transform: scaleY(0.88); transform-origin: bottom; }
+  to { transform: scaleY(1); transform-origin: bottom; }
+}
+
+@keyframes landing-enter {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 .phone button {
@@ -592,6 +702,7 @@ textarea:focus {
   background: rgba(255, 255, 255, 0.9);
   box-shadow: 0 18px 35px rgba(45, 24, 83, 0.16);
   backdrop-filter: blur(12px);
+  animation: card-float 5.5s ease-in-out infinite;
 }
 
 .floating-card svg {
@@ -621,6 +732,12 @@ textarea:focus {
 .card-two {
   bottom: 55px;
   left: 5px;
+  animation-delay: -2.6s;
+}
+
+@keyframes card-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-9px); }
 }
 
 .coin {
@@ -679,6 +796,11 @@ textarea:focus {
   display: flex;
   align-items: center;
   gap: 16px;
+  transition: transform 200ms ease, background-color 200ms ease;
+}
+
+.feature-card:hover {
+  transform: translateY(-4px);
 }
 
 .feature-card + .feature-card {
@@ -742,6 +864,7 @@ textarea:focus {
   border: 1px solid rgba(196, 181, 253, 0.13);
   border-radius: 50%;
   box-shadow: 0 0 0 34px rgba(196, 181, 253, 0.035), 0 0 0 72px rgba(196, 181, 253, 0.025);
+  animation: workflow-orbit 42s linear infinite;
 }
 
 .how-it-works::after {
@@ -752,6 +875,10 @@ textarea:focus {
   border-radius: 50%;
   background: rgba(139, 92, 246, 0.24);
   filter: blur(48px);
+}
+
+@keyframes workflow-orbit {
+  to { transform: rotate(360deg); }
 }
 
 .steps-intro {
@@ -1016,7 +1143,7 @@ textarea:focus {
 }
 
 .about-orbit-one { width: 300px; height: 300px; animation: orbit-turn 28s linear infinite; }
-.about-orbit-two { width: 365px; height: 230px; transform: rotate(-32deg); border-style: dashed; }
+.about-orbit-two { width: 365px; height: 230px; transform: rotate(-32deg); border-style: dashed; animation: orbit-ellipse 36s linear infinite; }
 
 .about-core {
   width: 190px;
@@ -1086,6 +1213,10 @@ textarea:focus {
 }
 
 @keyframes orbit-turn { to { transform: rotate(360deg); } }
+@keyframes orbit-ellipse {
+  from { transform: rotate(-32deg); }
+  to { transform: rotate(328deg); }
+}
 
 @media (max-width: 900px) {
   .about-section {
@@ -1113,6 +1244,7 @@ textarea:focus {
   .about-visual,
   .about-visual::before,
   .about-orbit-one,
+  .about-orbit-two,
   .about-core,
   .about-float-card,
   .about-spark {
@@ -1120,6 +1252,25 @@ textarea:focus {
   }
 
   .about-cta { transition: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .landing-nav,
+  .hero-content,
+  .glow,
+  .dashboard-orb,
+  .floating-card,
+  .phone-chart i,
+  .feature-card,
+  .how-it-works::before,
+  .holo-icon {
+    animation: none;
+  }
+
+  .phone-chart i,
+  .feature-card {
+    transition: none;
+  }
 }
 
 /* =========================================================
@@ -2154,6 +2305,10 @@ textarea:focus {
   border: 1px solid #e5dbff;
   border-radius: 14px;
   background: linear-gradient(135deg, #faf7ff, #f5f0ff);
+}
+
+.quick-entry-banner > div:last-child {
+  min-width: 0;
 }
 
 .quick-entry-icon {
@@ -6273,7 +6428,8 @@ textarea:focus-visible {
 /* Center the actual expenditure form */
 
 .add-expenditure-screen .spendora-page-content {
-  width: 100%;
+  width: min(820px, calc(100% - 80px));
+  padding-top: 22px;
 }
 
 .add-expenditure-screen .form-page-layout {
@@ -6314,15 +6470,77 @@ textarea:focus-visible {
     max-width: none;
     margin-top: 4px;
   }
+
+  .add-expenditure-screen .spendora-page-content {
+    width: calc(100% - 40px);
+    padding-top: 16px;
+  }
 }
 
 @media (max-width: 480px) {
+  .add-expenditure-page-header {
+    display: grid;
+    grid-template-columns: 38px minmax(0, 1fr) 38px;
+    align-items: start;
+    gap: 8px;
+    padding: 20px 14px 8px;
+  }
+
+  .add-expenditure-back-button {
+    position: static;
+    grid-column: 1;
+    grid-row: 1;
+    width: 38px;
+    height: 38px;
+  }
+
+  .add-expenditure-page-heading {
+    grid-column: 2;
+    grid-row: 1;
+    min-width: 0;
+  }
+
   .add-expenditure-page-heading h1 {
     font-size: 22px;
   }
 
   .add-expenditure-page-heading p:last-child {
     max-width: 260px;
+    font-size: 12px;
+  }
+
+  .add-expenditure-screen .spendora-page-content {
+    width: calc(100% - 28px);
+    padding-top: 12px;
+  }
+
+  .add-expenditure-screen .expense-form-card {
+    border-radius: 16px;
+  }
+
+  .add-expenditure-screen .quick-entry-banner {
+    align-items: flex-start;
+    gap: 10px;
+    margin: 12px 12px 0;
+    padding: 12px;
+  }
+
+  .quick-entry-banner span {
+    line-height: 1.5;
+  }
+
+  .add-expenditure-screen .form-section {
+    padding: 21px 14px;
+  }
+
+  .add-expenditure-screen .form-section-title {
+    flex-wrap: wrap;
+    gap: 7px 12px;
+    margin-bottom: 17px;
+  }
+
+  .add-expenditure-screen .form-actions {
+    padding: 15px 14px;
   }
 }
 
