@@ -191,9 +191,11 @@ function Expenditures() {
                     <td data-label="Sub-category">{expense.subcategory.name}</td>
                     <td className="amount-cell" data-label="Amount">{money(expense.amount, expense.currency)}</td>
                     <td data-label="Payment">{expense.paymentMethod}</td>
-                    <td className="expenditure-table-actions" data-label="Actions">
-                      <Link to={`/expenditures/edit/${expense.id}`} title="Edit expenditure" aria-label="Edit expenditure"><Edit3 size={15} /></Link>
-                      <button type="button" title="Delete expenditure" aria-label="Delete expenditure" onClick={() => deleteExpense(expense)}><Trash2 size={15} /></button>
+                    <td className="expenditure-table-actions-cell" data-label="Actions">
+                      <div className="expenditure-table-actions">
+                        <Link to={`/expenditures/edit/${expense.id}`} title="Edit expenditure" aria-label="Edit expenditure"><Edit3 size={15} /></Link>
+                        <button type="button" title="Delete expenditure" aria-label="Delete expenditure" onClick={() => deleteExpense(expense)}><Trash2 size={15} /></button>
+                      </div>
                     </td>
                   </tr>
                 ))}

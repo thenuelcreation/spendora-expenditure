@@ -4745,21 +4745,24 @@ textarea:focus-visible {
   width: 100%;
 }
 
-.expenditures-screen .records-head,
-.expenditures-screen .records-row {
-  display: grid;
-  grid-template-columns: 0.85fr 1.25fr 1.4fr 0.9fr 0.85fr 0.65fr;
-  align-items: center;
+.expenditures-screen .expenditures-table-scroll {
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  -webkit-overflow-scrolling: touch;
 }
 
-.expenditures-screen .records-head {
-  min-height: 46px;
-  padding: 0 20px;
+.expenditures-screen .expenditures-records-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  text-align: left;
+}
+
+.expenditures-screen .expenditures-records-table th {
+  height: 46px;
+  padding: 0 16px;
   background: #fafafd;
   border-bottom: 1px solid #eeeeF2;
-}
-
-.expenditures-screen .records-head span {
   color: #888892;
   font-size: 9px;
   font-weight: 750;
@@ -4767,23 +4770,33 @@ textarea:focus-visible {
   text-transform: uppercase;
 }
 
-.expenditures-screen .records-row {
-  min-height: 65px;
-  padding: 0 20px;
-  border-bottom: 1px solid #f0f0f3;
+.expenditures-screen .expenditures-records-table th:first-child {
+  padding-left: 20px;
 }
 
-.expenditures-screen .records-row:last-child {
+.expenditures-screen .expenditures-records-table th:last-child {
+  width: 90px;
+  padding-right: 20px;
+}
+
+.expenditures-screen .expenditures-records-table td {
+  height: 65px;
+  padding: 10px 16px;
+  border-bottom: 1px solid #f0f0f3;
+  color: #50505a;
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+.expenditures-screen .expenditures-records-table tbody tr:last-child td {
   border-bottom: 0;
 }
 
-.expenditures-screen .records-row > span,
-.expenditures-screen .records-row > strong {
-  color: #50505a;
-  font-size: 11px;
+.expenditures-screen .expenditures-records-table tbody tr:hover {
+  background: #fcfbfe;
 }
 
-.expenditures-screen .records-row > strong {
+.expenditures-screen .expenditures-records-table .amount-cell {
   color: #292932;
   font-weight: 700;
 }
@@ -4793,14 +4806,19 @@ textarea:focus-visible {
   font-weight: 650;
 }
 
-.expenditures-screen .record-actions {
+.expenditures-screen .expenditure-table-actions-cell {
+  text-align: right;
+}
+
+.expenditures-screen .expenditure-table-actions {
   display: flex;
   align-items: center;
+  justify-content: flex-end;
   gap: 7px;
 }
 
-.expenditures-screen .record-actions a,
-.expenditures-screen .record-actions button {
+.expenditures-screen .expenditure-table-actions a,
+.expenditures-screen .expenditure-table-actions button {
   width: 31px;
   height: 31px;
   display: grid;
@@ -4813,13 +4831,13 @@ textarea:focus-visible {
   text-decoration: none;
 }
 
-.expenditures-screen .record-actions a:hover {
+.expenditures-screen .expenditure-table-actions a:hover {
   color: #6947ff;
   border-color: #d6cffb;
   background: #f8f6ff;
 }
 
-.expenditures-screen .record-actions button:hover {
+.expenditures-screen .expenditure-table-actions button:hover {
   color: #d0444d;
   border-color: #f0cccc;
   background: #fff7f7;
@@ -4873,10 +4891,6 @@ textarea:focus-visible {
     grid-column: 1 / -1;
   }
 
-  .expenditures-screen .records-head,
-  .expenditures-screen .records-row {
-    grid-template-columns: 0.8fr 1.1fr 1.2fr 0.8fr 0.8fr 0.7fr;
-  }
 }
 
 /* Mobile */
@@ -4909,52 +4923,8 @@ textarea:focus-visible {
     width: 100%;
   }
 
-  .expenditures-screen .records-head {
-    display: none;
-  }
-
-  .expenditures-screen .records-row {
-    display: block;
-    padding: 15px;
-  }
-
-  .expenditures-screen .records-row > span,
-  .expenditures-screen .records-row > strong {
-    min-height: 28px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 15px;
-    font-size: 11px;
-  }
-
-  .expenditures-screen .records-row > span::before,
-  .expenditures-screen .records-row > strong::before {
-    content: attr(data-label);
-    color: #9999a3;
-    font-size: 9px;
-    font-weight: 700;
-    text-transform: uppercase;
-  }
-
-  .expenditures-screen .records-row .category-cell {
-    display: flex;
-  }
-
-  .expenditures-screen .record-actions {
-    justify-content: flex-end;
-    padding-top: 8px;
-    margin-top: 5px;
-    border-top: 1px solid #f0f0f3;
-  }
-
-  .expenditures-screen .record-actions::before {
-    content: "Actions";
-    margin-right: auto;
-    color: #9999a3;
-    font-size: 9px;
-    font-weight: 700;
-    text-transform: uppercase;
+  .expenditures-screen .expenditures-records-table {
+    min-width: 720px;
   }
 
   .expenditures-screen .pagination {
