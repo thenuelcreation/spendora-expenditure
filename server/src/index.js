@@ -127,6 +127,7 @@ function serializeUser(user) {
     id: user.id,
     name: user.name,
     email: user.email,
+    role: user.role,
     appearance: user.appearance,
     notifications: user.notifications,
     preferredCurrency: user.preferredCurrency,
@@ -147,6 +148,17 @@ function requireAuth(req, res, next) {
   } catch {
     return sendError(res, 401, "Your session has expired. Please sign in again.");
   }
+}
+
+async function requireAdmin(req, res, next) {
+  const user = await prisma.user.findUnique({
+    where: { id: req.userId },
+    select: { role: true },
+  });
+  if (!user || user.role !== "ADMIN") {
+    return sendError(res, 403, "Administrator access is required.");
+  }
+  return next();
 }
 
 function periodRange(period) {
@@ -293,6 +305,126 @@ app.get("/api/auth/me", requireAuth, async (req, res) => {
   const user = await prisma.user.findUnique({ where: { id: req.userId } });
   if (!user) return sendError(res, 401, "Your account could not be found. Please sign in again.");
   return res.json({ user: serializeUser(user) });
+});
+
+app.get("/api/admin/overview", requireAuth, requireAdmin, async (_req, res) => {
+  const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+  const [
+    userCount,
+    newUsersLast30Days,
+    expenditureCount,
+    categoryCount,
+    currencyGroups,
+    categoryGroups,
+    paymentMethodGroups,
+    users,
+    recentExpenditures,
+  ] = await Promise.all([
+    prisma.user.count(),
+    prisma.user.count({ where: { createdAt: { gte: thirtyDaysAgo } } }),
+    prisma.expenditure.count(),
+    prisma.category.count(),
+    prisma.expenditure.groupBy({
+      by: ["currency"],
+      _sum: { amount: true },
+      _count: { _all: true },
+      orderBy: { currency: "asc" },
+    }),
+    prisma.expenditure.groupBy({
+      by: ["categoryId"],
+      _count: { _all: true },
+      orderBy: { _count: { categoryId: "desc" } },
+      take: 5,
+    }),
+    prisma.expenditure.groupBy({
+      by: ["paymentMethod"],
+      _count: { _all: true },
+      orderBy: { _count: { paymentMethod: "desc" } },
+      take: 5,
+    }),
+    prisma.user.findMany({
+      orderBy: { createdAt: "desc" },
+      take: 50,
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        role: true,
+        preferredCurrency: true,
+        createdAt: true,
+        _count: { select: { expenditures: true, categories: true } },
+        expenditures: {
+          orderBy: { createdAt: "desc" },
+          take: 1,
+          select: { createdAt: true },
+        },
+      },
+    }),
+    prisma.expenditure.findMany({
+      orderBy: { createdAt: "desc" },
+      take: 10,
+      select: {
+        id: true,
+        amount: true,
+        currency: true,
+        date: true,
+        createdAt: true,
+        user: { select: { name: true, email: true } },
+        category: { select: { name: true } },
+      },
+    }),
+  ]);
+  const categoryIds = categoryGroups.map((group) => group.categoryId);
+  const categories = categoryIds.length
+    ? await prisma.category.findMany({
+      where: { id: { in: categoryIds } },
+      select: { id: true, name: true },
+    })
+    : [];
+  const categoryNames = new Map(categories.map((category) => [category.id, category.name]));
+
+  return res.json({
+    summary: {
+      userCount,
+      newUsersLast30Days,
+      expenditureCount,
+      categoryCount,
+    },
+    spendingByCurrency: currencyGroups.map((group) => ({
+      currency: group.currency,
+      total: group._sum.amount?.toString() || "0",
+      recordCount: group._count._all,
+    })),
+    topCategories: categoryGroups.map((group) => ({
+      name: categoryNames.get(group.categoryId) || "Unknown category",
+      recordCount: group._count._all,
+    })),
+    paymentMethods: paymentMethodGroups.map((group) => ({
+      name: group.paymentMethod,
+      recordCount: group._count._all,
+    })),
+    users: users.map((user) => ({
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      preferredCurrency: user.preferredCurrency,
+      createdAt: user.createdAt,
+      expenditureCount: user._count.expenditures,
+      categoryCount: user._count.categories,
+      lastExpenditureAt: user.expenditures[0]?.createdAt || null,
+    })),
+    recentActivity: recentExpenditures.map((expenditure) => ({
+      id: expenditure.id,
+      userName: expenditure.user.name,
+      userEmail: expenditure.user.email,
+      category: expenditure.category.name,
+      amount: expenditure.amount.toString(),
+      currency: expenditure.currency,
+      expenditureDate: expenditure.date,
+      recordedAt: expenditure.createdAt,
+    })),
+  });
 });
 
 app.patch("/api/users/me", requireAuth, async (req, res) => {

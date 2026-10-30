@@ -57,5 +57,20 @@ The proxy keeps the HttpOnly session cookie on the frontend's origin. Free Rende
 - Expenditure create, read, update, delete, search, category/date filters, and pagination
 - Dashboard totals and charts based on saved records and the selected display currency
 - Authenticated CSV export, compatible with Excel
+- Role-protected admin overview with registered accounts, aggregate expenditure usage, and recent expenditure activity
+
+### Admin access
+
+After deploying the database migration, promote a trusted existing account to administrator by running this SQL against the Spendora database (replace the email with the account's exact email address):
+
+```sql
+UPDATE "User"
+SET "role" = 'ADMIN'
+WHERE "email" = 'admin@example.com';
+```
+
+New accounts default to the `USER` role and cannot grant themselves administrator access. The admin overview is available at `/admin`; both the frontend route and API enforce the administrator role. It reports expenditure activity, not login history or online presence. Subscription details are not included until subscription support is implemented.
+
+For an existing local database, apply the migration first with `npm run db:deploy` from `server`, then sign out and back in after promoting the account.
 
 Receipt file storage and email-based password recovery are not enabled; neither external file storage nor an email delivery provider is configured.

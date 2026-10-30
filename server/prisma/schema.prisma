@@ -11,6 +11,7 @@ model User {
   name              String
   email             String       @unique
   passwordHash      String
+  role              String       @default("USER")
   appearance        String       @default("System")
   notifications     Boolean      @default(true)
   preferredCurrency String       @default("NGN")

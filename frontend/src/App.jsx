@@ -12,7 +12,9 @@ import Categories from "./screens/Categories";
 import ExportExcel from "./screens/ExportExcel";
 import Settings from "./screens/Settings";
 import Profile from "./screens/Profile";
+import AdminDashboard from "./screens/AdminDashboard";
 import ProtectedRoute from "./components/layout/ProtectedRoute";
+import AdminRoute from "./components/layout/AdminRoute";
 import SplashScreen from "./components/layout/SplashScreen";
 import { AuthProvider } from "./auth/AuthContext";
 
@@ -44,6 +46,9 @@ function AppRoutes() {
           <Route path="/export" element={<ExportExcel />} />
           <Route path="/settings" element={<Settings />} />
           <Route path="/profile" element={<Profile />} />
+          <Route element={<AdminRoute />}>
+            <Route path="/admin" element={<AdminDashboard />} />
+          </Route>
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

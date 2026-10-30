@@ -74,6 +74,7 @@ function Dashboard() {
           <p className="nav-label second-label">ACCOUNT</p>
           <Link className="nav-item" to="/profile"><Wallet size={18} />Profile</Link>
           <Link className="nav-item" to="/settings"><Settings size={18} />Settings</Link>
+          {user?.role === "ADMIN" && <Link className="nav-item" to="/admin"><Settings size={18} />Admin overview</Link>}
         </nav>
         <Link to="/profile" className="sidebar-user">
           <div className="avatar">{user?.name?.slice(0, 2).toUpperCase()}</div>
