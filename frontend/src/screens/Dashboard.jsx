@@ -6,6 +6,7 @@ import {
   Download,
   Plus,
   Receipt,
+  ShieldCheck,
   Settings,
   Tags,
   TrendingUp,
@@ -74,7 +75,7 @@ function Dashboard() {
           <p className="nav-label second-label">ACCOUNT</p>
           <Link className="nav-item" to="/profile"><Wallet size={18} />Profile</Link>
           <Link className="nav-item" to="/settings"><Settings size={18} />Settings</Link>
-          {user?.role === "ADMIN" && <Link className="nav-item" to="/admin"><Settings size={18} />Admin overview</Link>}
+          {user?.role === "ADMIN" && <Link className="nav-item" to="/admin"><ShieldCheck size={18} />Admin overview</Link>}
         </nav>
         <Link to="/profile" className="sidebar-user">
           <div className="avatar">{user?.name?.slice(0, 2).toUpperCase()}</div>
@@ -218,6 +219,7 @@ function Dashboard() {
         <Link className="mobile-nav-item" to="/expenditures"><Receipt size={19} /><span>Expenditures</span></Link>
         <Link className="mobile-add" to="/expenditures/add" aria-label="Add expenditure"><Plus size={23} /></Link>
         <Link className="mobile-nav-item" to="/categories"><Tags size={19} /><span>Categories</span></Link>
+        {user?.role === "ADMIN" && <Link className="mobile-nav-item" to="/admin"><ShieldCheck size={19} /><span>Admin</span></Link>}
         <Link className="mobile-nav-item" to="/settings"><Settings size={19} /><span>Settings</span></Link>
       </nav>
     </div>
