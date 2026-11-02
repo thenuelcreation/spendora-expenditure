@@ -307,6 +307,134 @@ app.get("/api/auth/me", requireAuth, async (req, res) => {
   return res.json({ user: serializeUser(user) });
 });
 
+app.get("/api/admin/users", requireAuth, requireAdmin, async (req, res) => {
+  const search = typeof req.query.search === "string" ? req.query.search.trim().slice(0, 100) : "";
+  if (search.length < 2) {
+    return sendError(res, 400, "Enter at least two characters to search for an account.");
+  }
+
+  const where = {
+    OR: [
+      { name: { contains: search, mode: "insensitive" } },
+      { email: { contains: search, mode: "insensitive" } },
+    ],
+  };
+  const [total, users] = await Promise.all([
+    prisma.user.count({ where }),
+    prisma.user.findMany({
+      where,
+      orderBy: { createdAt: "desc" },
+      take: 50,
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        role: true,
+        preferredCurrency: true,
+        createdAt: true,
+        _count: { select: { expenditures: true, categories: true } },
+        expenditures: {
+          orderBy: { createdAt: "desc" },
+          take: 1,
+          select: { createdAt: true },
+        },
+      },
+    }),
+  ]);
+
+  return res.json({
+    total,
+    truncated: total > users.length,
+    users: users.map((user) => ({
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      preferredCurrency: user.preferredCurrency,
+      createdAt: user.createdAt,
+      expenditureCount: user._count.expenditures,
+      categoryCount: user._count.categories,
+      lastExpenditureAt: user.expenditures[0]?.createdAt || null,
+    })),
+  });
+});
+
+app.get("/api/admin/users/:id", requireAuth, requireAdmin, async (req, res) => {
+  const page = req.query.page === undefined ? 1 : Number(req.query.page);
+  const pageSize = 25;
+  if (!Number.isSafeInteger(page) || page < 1 || page > 100_000) {
+    return sendError(res, 400, "Select a valid expenditure page.");
+  }
+
+  const user = await prisma.user.findUnique({
+    where: { id: req.params.id },
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      role: true,
+      appearance: true,
+      notifications: true,
+      preferredCurrency: true,
+      createdAt: true,
+      updatedAt: true,
+      categories: {
+        orderBy: { name: "asc" },
+        select: {
+          id: true,
+          name: true,
+          description: true,
+          createdAt: true,
+          updatedAt: true,
+          subcategories: {
+            orderBy: { name: "asc" },
+            select: { id: true, name: true, createdAt: true },
+          },
+        },
+      },
+    },
+  });
+  if (!user) return sendError(res, 404, "The selected account could not be found.");
+
+  const [total, expenditures] = await Promise.all([
+    prisma.expenditure.count({ where: { userId: user.id } }),
+    prisma.expenditure.findMany({
+      where: { userId: user.id },
+      orderBy: [{ date: "desc" }, { createdAt: "desc" }],
+      skip: (page - 1) * pageSize,
+      take: pageSize,
+      select: {
+        id: true,
+        date: true,
+        amount: true,
+        currency: true,
+        paymentMethod: true,
+        description: true,
+        vendor: true,
+        reference: true,
+        createdAt: true,
+        updatedAt: true,
+        category: { select: { name: true } },
+        subcategory: { select: { name: true } },
+      },
+    }),
+  ]);
+
+  return res.json({
+    user,
+    expenditures: {
+      records: expenditures.map((expenditure) => ({
+        ...expenditure,
+        amount: expenditure.amount.toString(),
+      })),
+      total,
+      page,
+      pageSize,
+      pageCount: Math.ceil(total / pageSize),
+    },
+  });
+});
+
 app.get("/api/admin/overview", requireAuth, requireAdmin, async (_req, res) => {
   const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
   const [

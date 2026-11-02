@@ -6969,9 +6969,179 @@ textarea:focus-visible {
 
 @keyframes admin-rotate { to { transform: rotate(360deg); } }
 
+.admin-user-search {
+  display: grid;
+  gap: 8px;
+  padding: 16px 20px;
+}
+
+.admin-user-search label {
+  color: #777383;
+  font-size: 11px;
+  font-weight: 650;
+}
+
+.admin-user-search-controls {
+  display: flex;
+  gap: 8px;
+}
+
+.admin-user-search-controls input {
+  width: min(100%, 440px);
+  min-width: 0;
+  padding: 10px 12px;
+  border: 1px solid #e5e1eb;
+  border-radius: 9px;
+  background: #fff;
+  color: #302c39;
+  font: inherit;
+  font-size: 12px;
+}
+
+.admin-user-search-controls input:focus {
+  outline: 2px solid #d8ccf5;
+  border-color: #8e6bd8;
+}
+
+.admin-user-search-controls button,
+.admin-view-button,
+.admin-pagination button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border: 1px solid #e5e1eb;
+  border-radius: 9px;
+  background: #fff;
+  color: #51416f;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.admin-user-search-controls button { padding: 0 14px; }
+.admin-view-button { padding: 7px 10px; white-space: nowrap; }
+.admin-user-search-controls button:disabled,
+.admin-pagination button:disabled { cursor: wait; opacity: 0.6; }
+.admin-view-button:hover,
+.admin-user-search-controls button:hover:not(:disabled),
+.admin-pagination button:hover:not(:disabled) { background: #f7f3ff; }
+
+.admin-inline-error {
+  margin: 0;
+  padding: 10px 20px;
+  color: #a52c3b;
+  font-size: 11px;
+}
+
+.admin-search-note {
+  margin: 0;
+  color: #777383;
+  font-size: 10px;
+}
+
+.admin-account-summary {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  padding: 18px 20px;
+}
+
+.admin-account-summary > div {
+  display: grid;
+  gap: 5px;
+  min-width: 0;
+  padding: 12px;
+  border: 1px solid #f0edf4;
+  border-radius: 10px;
+}
+
+.admin-account-summary span,
+.admin-category-card small {
+  color: #85808e;
+  font-size: 10px;
+}
+
+.admin-account-summary strong {
+  overflow-wrap: anywhere;
+  color: #302c39;
+  font-size: 11px;
+}
+
+.admin-detail-section { border-top: 1px solid #f0edf4; }
+.admin-detail-section .admin-panel-heading { border-bottom: 0; }
+.admin-detail-section .admin-panel-heading h3 {
+  margin: 0;
+  color: #777383;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.admin-category-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  padding: 0 20px 18px;
+}
+
+.admin-category-card {
+  display: grid;
+  gap: 12px;
+  padding: 14px;
+  border: 1px solid #f0edf4;
+  border-radius: 10px;
+}
+
+.admin-category-card strong {
+  color: #302c39;
+  font-size: 12px;
+}
+
+.admin-category-card p {
+  margin: 5px 0;
+  color: #777383;
+  font-size: 11px;
+}
+
+.admin-subcategory-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.admin-subcategory-list span {
+  padding: 5px 8px;
+  border-radius: 7px;
+  background: #f5f2fa;
+  color: #655b75;
+  font-size: 10px;
+}
+
+.admin-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 20px;
+  color: #777383;
+  font-size: 10px;
+}
+
+.admin-pagination > div {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.admin-pagination button { padding: 7px 9px; }
+
 @media (max-width: 1050px) {
   .admin-stats-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .admin-panels { grid-template-columns: 1fr; }
+  .admin-account-summary { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 
 @media (max-width: 600px) {
@@ -6984,6 +7154,9 @@ textarea:focus-visible {
   .admin-stat-card p { min-height: 29px; font-size: 9px; }
   .admin-stat-card strong { font-size: 19px; }
   .admin-usage-columns { grid-template-columns: 1fr; gap: 18px; }
+  .admin-category-list { grid-template-columns: 1fr; }
+  .admin-pagination { align-items: flex-start; flex-direction: column; }
+  .admin-pagination > div { width: 100%; justify-content: space-between; }
 }
 
 :root[data-theme="dark"] .admin-stat-card,
@@ -7021,6 +7194,44 @@ textarea:focus-visible {
 :root[data-theme="dark"] .admin-table th {
   color: var(--text-secondary);
   background: var(--surface-soft);
+}
+
+:root[data-theme="dark"] .admin-user-search label,
+:root[data-theme="dark"] .admin-search-note,
+:root[data-theme="dark"] .admin-pagination,
+:root[data-theme="dark"] .admin-category-card p {
+  color: var(--text-secondary);
+}
+
+:root[data-theme="dark"] .admin-user-search-controls input,
+:root[data-theme="dark"] .admin-user-search-controls button,
+:root[data-theme="dark"] .admin-view-button,
+:root[data-theme="dark"] .admin-pagination button {
+  border-color: var(--border);
+  background: var(--surface);
+  color: var(--text);
+}
+
+:root[data-theme="dark"] .admin-account-summary > div,
+:root[data-theme="dark"] .admin-category-card,
+:root[data-theme="dark"] .admin-detail-section {
+  border-color: var(--border-light);
+}
+
+:root[data-theme="dark"] .admin-user-search-controls input,
+:root[data-theme="dark"] .admin-account-summary strong,
+:root[data-theme="dark"] .admin-category-card strong {
+  color: var(--text);
+}
+
+:root[data-theme="dark"] .admin-account-summary span,
+:root[data-theme="dark"] .admin-category-card small {
+  color: var(--text-muted);
+}
+
+:root[data-theme="dark"] .admin-subcategory-list span {
+  background: var(--surface-soft);
+  color: var(--text-secondary);
 }
 
 :root[data-theme="dark"] .admin-table td span {

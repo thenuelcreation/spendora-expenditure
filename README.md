@@ -57,7 +57,7 @@ The proxy keeps the HttpOnly session cookie on the frontend's origin. Free Rende
 - Expenditure create, read, update, delete, search, category/date filters, and pagination
 - Dashboard totals and charts based on saved records and the selected display currency
 - Authenticated CSV export, compatible with Excel
-- Role-protected admin overview with registered accounts, aggregate expenditure usage, and recent expenditure activity
+- Role-protected admin overview with searchable registered accounts, aggregate expenditure usage, recent activity, and paginated read-only account details
 
 ### Admin access
 
@@ -70,6 +70,8 @@ WHERE "email" = 'admin@example.com';
 ```
 
 New accounts default to the `USER` role and cannot grant themselves administrator access. The admin overview is available at `/admin`; both the frontend route and API enforce the administrator role. It reports expenditure activity, not login history or online presence. Subscription details are not included until subscription support is implemented.
+
+Administrators can search accounts by name or email and inspect profile preferences, categories, subcategories, and paginated expenditure records in the app. Passwords and password hashes are never returned by the admin account detail API. Promoting the first administrator remains a one-time database operation.
 
 For an existing local database, apply the migration first with `npm run db:deploy` from `server`, then sign out and back in after promoting the account.
 
